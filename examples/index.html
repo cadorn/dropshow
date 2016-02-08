@@ -1,0 +1,57 @@
+<!doctype html>
+<html>
+    
+    <head>
+        <title>Gunshow</title>
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+        <link rel="stylesheet" type="text/css" href="semantic-ui/semantic.min.css">
+    </head>
+    
+    <body>
+        
+        <div class="ui container">
+            <viewer></viewer>
+        </div>
+
+        <editor></editor>
+
+        
+        <!-- data loading -->
+        <script src="gunshow/pegasus/pegasus.min.js"></script>
+        <script>
+            window.app_images = pegasus('gunshow/images.json');
+        </script>
+        <script src="gunshow/gun/gun.js"></script>
+
+
+        <!-- riot tags -->
+        <script src="gunshow/viewer/viewer.bundle.js"></script>
+
+
+        <!-- scripts we need for init 
+        <script src="gunshow/riot/riot+compiler.min.js"></script>
+        -->
+
+        <!-- scripts we need for later -->
+
+        <script src="gunshow/editor/dom-outline.js"></script>
+
+        <script src="gunshow/jquery/jquery.min.js"></script>
+        <link rel="stylesheet" type="text/css" href="gunshow/magnific-popup/magnific-popup.css">
+        <script src="gunshow/magnific-popup/jquery.magnific-popup.min.js"></script>
+
+        <link rel="stylesheet" type="text/css" href="gunshow/codemirror/codemirror.css">
+        <script src="gunshow/codemirror/codemirror.js"></script>
+
+
+        <!-- mount this app -->
+        <script>
+        
+            window.mountViewer();
+        
+//            riot.mount('editor', {});
+        </script>
+
+    </body>
+
+</html>

@@ -1,16 +1,18 @@
 {
   "name": "gunshow",
   "version": "0.1.0",
+  "main": "app.js",
   "dependencies": {
     "@typicode/pegasus": "^0.3.2",
+    "browserify": "^13.0.0",
     "cloudinary": "^1.3.0",
+    "codemirror": "^5.11.0",
+    "jquery": "^2.2.0",
+    "magnific-popup": "^1.0.1",
     "riot": "^2.3.15",
-    "semantic-ui-css": "^2.1.8"
+    "riotify": "^0.1.2"
   },
   "devDependencies": {
     "express": "^4.13.4"
-  },
-  "scripts": {
-    "start": "node server.js"
   }
 }

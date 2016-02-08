@@ -1,0 +1,13 @@
+{
+  "name": "gunshow-examles",
+  "private": true,
+  "dependencies": {
+    "semantic-ui-css": "^2.1.8"
+  },
+  "devDependencies": {
+    "express": "^4.13.4"
+  },
+  "scripts": {
+    "start": "node server.js"
+  }
+}
