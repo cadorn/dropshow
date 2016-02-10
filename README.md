@@ -3,7 +3,7 @@
 Gunshow
 =======
 
-Showcase rich data using [riot](http://riotjs.com/) components fed by a [replicating gun field](https://github.com/cadorn/gunfield).
+Showcase rich data using [riot](http://riotjs.com/) components fed by a [replicating gunfield](https://github.com/cadorn/gunfield).
 
 Install
 -------

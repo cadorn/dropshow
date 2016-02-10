@@ -25,11 +25,13 @@
                     { caption }
                 </div>
             </a>
+        </div>
 
-            <a if={ state.mode == "edit" } class="item">
-                <i class="circular huge plus icon"></i>
-            </a>
-
+        <div class="ui container">
+          <br/>
+          <a href="#" if={ state.mode == "edit" } onclick={ requestLibrary }>
+            <i class="big plus icon"></i>
+          </a>
         </div>
 
       </div>

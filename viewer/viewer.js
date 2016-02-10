@@ -42,7 +42,6 @@ exports.mount = function (SPINE) {
                 } else {
                     self.gallery = null;
                 }
-console.log("self.gallery", self.gallery);
             };
             syncSelectedGallery();
         }
@@ -81,6 +80,12 @@ console.log("GALLERY CHANGED", value);
             SPINE.events.trigger("request.gallery", {
                 id: event.item.id,
                 select: true
+            });
+        }
+        self.requestLibrary = function (event) {
+            SPINE.events.trigger("request.library", {
+                el: $(event.target),
+                id: SPINE.UTIL.makeIdForNode($(event.target))
             });
         }
 

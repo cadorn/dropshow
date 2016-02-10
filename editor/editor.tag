@@ -3,8 +3,6 @@
 
       <div id="editor-modal" class="mfp-hide white-popup-block">
 
-        <textarea id="editor">HelloWorld</textarea>
-
         <div class="ui menu">
             <div class="ui container">
               <div class="right menu">
@@ -14,6 +12,9 @@
               </div>
             </div>
         </div>
+
+        <textarea id="editor">HelloWorld</textarea>
+
       </div>
 
 

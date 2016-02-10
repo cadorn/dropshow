@@ -79,7 +79,6 @@ exports.mount = function (SPINE) {
                 },
                 type: 'inline',
                 preloader: false,
-                focus: '#username',
                 modal: true,
                 callbacks: {
                     open: function() {
