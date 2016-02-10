@@ -1,9 +1,10 @@
 
-<editor>
+<library>
 
-      <div id="editor-modal" class="mfp-hide white-popup-block">
+      <div id="library-modal" class="mfp-hide white-popup-block">
 
-        <textarea id="editor">HelloWorld</textarea>
+List images ....
+
 
         <div class="ui menu">
             <div class="ui container">
@@ -15,7 +16,6 @@
             </div>
         </div>
       </div>
-
 
     <script>
         opts.impl.call(this, opts);
@@ -32,4 +32,7 @@
         }
     </style>
 
-</editor>
+    <script>
+        opts.impl.call(this, opts);
+    </script>
+</library>

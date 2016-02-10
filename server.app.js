@@ -7,6 +7,10 @@ const RIOTIFY = require("riotify");
 
 exports.app = function (options) {
 
+    if (!options.s3.secret) {
+        throw new Error("Missing secret config credentials! Load them into your environment first.");
+    }
+
     var gun = GUN({
     //	file: 'data.json',
     	s3: {
@@ -16,7 +20,8 @@ exports.app = function (options) {
     		secret: options.s3.secret,
     		bucket: options.s3.bucket,
     		region: options.s3.region
-    	}
+    	},
+    	ws: options.ws || {}
     });
 
     var cloudinary = require('cloudinary');
@@ -61,11 +66,11 @@ exports.app = function (options) {
     });
 
     // TODO: Move these into gunshow lib/plugins.
-    app.get('/viewer/viewer.bundle.js', function (req, res, next) {
+    app.get('/app.js', function (req, res, next) {
 		var browserify = BROWSERIFY({
 			basedir: __dirname,
 			entries: [
-			    'viewer/viewer.js'
+			    'client.app.js'
 		    ]
 		});
 		browserify.transform(RIOTIFY, {});
@@ -81,14 +86,14 @@ exports.app = function (options) {
 
     app.use('/viewer', EXPRESS.static(PATH.join(__dirname, "viewer")));
     app.use('/editor', EXPRESS.static(PATH.join(__dirname, "editor")));
-    app.use('/pegasus', EXPRESS.static(PATH.join(require.resolve("@typicode/pegasus/package.json"), "../dist")));
+//    app.use('/pegasus', EXPRESS.static(PATH.join(require.resolve("@typicode/pegasus/package.json"), "../dist")));
     app.use('/riot', EXPRESS.static(PATH.dirname(require.resolve("riot/package.json"))));
     app.use('/magnific-popup', EXPRESS.static(PATH.join(require.resolve("magnific-popup/package.json"), "../dist")));
     app.use('/jquery', EXPRESS.static(PATH.join(require.resolve("jquery/package.json"), "../dist")));
     app.use('/codemirror', EXPRESS.static(PATH.join(require.resolve("codemirror/package.json"), "../lib")));
 
     // TODO: Move these into gunfield lib.
-    app.use('/gun', EXPRESS.static(PATH.join(__dirname, "../gunfield/node_modules/gun")));
+//    app.use('/gun', EXPRESS.static(PATH.join(__dirname, "../gunfield/node_modules/gun")));
 
     app.use(function (req, res, next) {
     	if(gun.wsp.server(req, res)) {
@@ -97,7 +102,12 @@ exports.app = function (options) {
     	return next();
     });
 
-    gun.wsp(options.server);
+    if (
+        options.gun &&
+        options.gun.server
+    ) {
+        gun.wsp(options.gun.server);
+    }
 
     return function (req, res, next) {
 

@@ -11,7 +11,12 @@ var app = EXPRESS();
 app.use('/semantic-ui', EXPRESS.static(PATH.dirname(require.resolve("semantic-ui-css/package.json"))));
 
 app.use('/gunshow', GUNSHOW.app({
-    server: app,
+    gun: {
+        server: app,
+        ws: {
+            path: "/gunshow/gun"
+        }
+    },
     s3: {
     	key: process.env.SERVICE_COM_AMAZON_AWS_ACCESS_KEY_ID,
     	secret: process.env.SERVICE_COM_AMAZON_AWS_SECRET_ACCESS_KEY,
