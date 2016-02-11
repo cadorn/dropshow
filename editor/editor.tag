@@ -1,5 +1,5 @@
 
-<editor>
+<gunshow-editor>
 
       <div id="editor-modal" class="mfp-hide white-popup-block">
 
@@ -31,6 +31,9 @@
           margin: 40px auto;
           position: relative;
         }
+        .gunshow-editable {
+          border: 2px dotted #BA00CC !important;
+        }
     </style>
 
-</editor>
+</gunshow-editor>

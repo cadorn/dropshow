@@ -24,9 +24,12 @@ app.use('/gunshow', GUNSHOW.app({
     	region: process.env.SERVICE_COM_AMAZON_AWS_S3_BUCKET_REGION
 	},
     cloudinary: { 
-      cloud_name: process.env.SERVICE_COM_CLOUDINARY_CLOUD, 
-      api_key: process.env.SERVICE_COM_CLOUDINARY_KEY, 
-      api_secret: process.env.SERVICE_COM_CLOUDINARY_SECRET
+        cloud_name: process.env.SERVICE_COM_CLOUDINARY_CLOUD, 
+        api_key: process.env.SERVICE_COM_CLOUDINARY_KEY, 
+        api_secret: process.env.SERVICE_COM_CLOUDINARY_SECRET,
+        import: {
+            folder: "originals"
+        }
     }
 }));
 

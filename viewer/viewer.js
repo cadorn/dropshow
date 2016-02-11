@@ -1,7 +1,7 @@
 
 var tag = require('./viewer.tag');
 
-exports.mount = function (SPINE) {
+exports.forSpine = function (SPINE) {
 
 
     function impl (opts) {
@@ -11,25 +11,22 @@ exports.mount = function (SPINE) {
 
         self.galleries = [];
         self.gallery = null;
-        
-        
-        self.images = [
-            {
-                caption: "Cap 1"
-            },
-            {
-                caption: "Cap 2"
-            }
-        ];
+
         
         var syncSelectedGallery = null;
         
 
         function setGalleries (galleries) {
             self.galleries = Object.keys(galleries).map(function (id) {
+
+                if (typeof galleries[id].images === "string") {
+                    galleries[id].images = JSON.parse(galleries[id].images);
+                }                
+                
                 return {
                     id: id,
-                    title: galleries[id].title
+                    title: galleries[id].title,
+                    itemCount: (galleries[id].images && Object.keys(galleries[id].images).length) || 0
                 };
             });
             syncSelectedGallery = function () {
@@ -37,7 +34,10 @@ exports.mount = function (SPINE) {
                     self.state.selected.gallery &&
                     galleries[self.state.selected.gallery]
                 ) {
-                    self.gallery = galleries[self.state.selected.gallery]
+                    self.gallery = galleries[self.state.selected.gallery];
+                    if (typeof self.gallery.images === "string") {
+                        self.gallery.images = JSON.parse(self.gallery.images);
+                    }
                     self.gallery.id = self.state.selected.gallery;
                 } else {
                     self.gallery = null;
@@ -72,7 +72,7 @@ console.log("GALLERY CHANGED", value);
         
         self.requestGalleryNew = function (event) {
             SPINE.events.trigger("request.gallery.new", {
-                id: SPINE.UTIL.makeIdForNode($(event.target)),
+                id: SPINE.UTIL.makeIdForNode(SPINE.$(event.target)),
                 select: true
             });
         }
@@ -84,14 +84,22 @@ console.log("GALLERY CHANGED", value);
         }
         self.requestLibrary = function (event) {
             SPINE.events.trigger("request.library", {
-                el: $(event.target),
-                id: SPINE.UTIL.makeIdForNode($(event.target))
+                el: SPINE.$(event.target),
+                id: SPINE.UTIL.makeIdForNode(SPINE.$(event.target))
             });
+        }
+        self.requestItemRemove = function (event) {
+            var images = self.gallery.images;
+            images = images.filter(function (image) {
+                return (image.id !== event.item.id);
+            });
+            SPINE.data.set("gallery", self.gallery.id, "images", JSON.stringify(images));
+            self.update();
         }
 
 
         self.on("mount", function () {
-            var ns = SPINE.UTIL.makeIdForNode($(self.root));
+            var ns = SPINE.UTIL.makeIdForNode(SPINE.$(self.root));
             SPINE.data.watch(ns, function () {
                 setGalleries(SPINE.data.getAll(ns));
                 self.update();
@@ -154,7 +162,15 @@ console.log("GALLERY CHANGED", value);
     }
 
 
-    return SPINE.RIOT.mount(tag, {
+    var opts = {
         impl: impl
-    });
+    };
+    return {
+        mount: function () {
+            return SPINE.RIOT.mount(tag, opts);
+        },
+        getOpts: function () {
+            return opts;
+        }
+    };
 }

@@ -1,11 +1,12 @@
 
 var tag = require('./editor-menu.tag');
 
-exports.mount = function (SPINE) {
+exports.forSpine = function (SPINE) {
 
     function impl (opts) {
         var self = this;
         self.state = SPINE.state;
+        self.config = SPINE.config;
         SPINE.events.on("changed.state", function () {
             self.update();
         });
@@ -20,7 +21,15 @@ exports.mount = function (SPINE) {
     }
 
 
-    return SPINE.RIOT.mount(tag, {
+    var opts = {
         impl: impl
-    });
+    };
+    return {
+        mount: function () {
+            return SPINE.RIOT.mount(tag, opts);
+        },
+        getOpts: function () {
+            return opts;
+        }
+    };
 }

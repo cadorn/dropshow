@@ -1,29 +1,44 @@
 
 var tag = require('./editor.tag');
 
-exports.mount = function (SPINE) {
+exports.forSpine = function (SPINE) {
 
 
 
-    const DOM_OUTLINE = require("../lib/dom-outline").DomOutline;
-    var domOutline = DOM_OUTLINE({
+    var domOutline = SPINE.DOM_OUTLINE({
         label: "Click to edit",
         onClick: function (element) {
             SPINE.events.trigger("request.edit", {
-                el: $(element),
-                id: SPINE.UTIL.makeIdForNode($(element))
+                el: SPINE.$(element),
+                id: SPINE.UTIL.makeIdForNode(SPINE.$(element))
             });
         },
-        filter: '[data-id][data-editable]'
+        filter: '[data-id][data-editable]',
+        requireContent: true
     });
     var running = false;
     function start () {
+        if (running) return;
         running = true;
         domOutline.start();
+        
+        SPINE.$('[data-id][data-editable]').each(function() {
+            var el = SPINE.$(this);
+            if (!el.html()) {
+                return;
+            }
+            el.addClass("gunshow-editable");
+        });
     }
     function stop () {
+        if (!running) return;
         running = false;
         domOutline.stop();
+
+        SPINE.$('[data-id][data-editable]').each(function() {
+            var el = SPINE.$(this);
+            el.removeClass("gunshow-editable");
+        });
     }
     SPINE.events.on("changed.dom", function () {
         if (running) {
@@ -53,7 +68,7 @@ exports.mount = function (SPINE) {
 
         var editor = null;
         self.on('mount', function() {
-            editor = window.CodeMirror.fromTextArea($("textarea#editor").get(0), {
+            editor = SPINE.CODEMIRROR.fromTextArea(SPINE.$("textarea#editor").get(0), {
                 lineNumbers: true
             });
         });
@@ -67,13 +82,15 @@ exports.mount = function (SPINE) {
                 !event.el
             ) return;
             
+            stop();
+            
             editingContext = event;
 
             var data = event.el.html();
 
             editor.doc.setValue(data);
 
-            $.magnificPopup.open({
+            SPINE.$.magnificPopup.open({
                 items: {
                     src: '#editor-modal'
                 },
@@ -82,7 +99,7 @@ exports.mount = function (SPINE) {
                 modal: true,
                 callbacks: {
                     open: function() {
-                        $('.CodeMirror').each(function(i, el) {
+                        SPINE.$('.CodeMirror').each(function(i, el) {
                             el.CodeMirror.refresh();
                         });
                     }
@@ -98,13 +115,25 @@ exports.mount = function (SPINE) {
 
             SPINE.data.set(namespace, id, property, editor.doc.getValue());
 
-            $.magnificPopup.close();
+            SPINE.$.magnificPopup.close();
+            
+            SPINE.events.trigger("request.edit");
+            
+            start();
         }
     }
 
 
 
-    return SPINE.RIOT.mount(tag, {
+    var opts = {
         impl: impl
-    });
+    };
+    return {
+        mount: function () {
+            return SPINE.RIOT.mount(tag, opts);
+        },
+        getOpts: function () {
+            return opts;
+        }
+    };
 }

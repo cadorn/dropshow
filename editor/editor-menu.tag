@@ -1,10 +1,10 @@
 
-<editor-menu  class="ui fixed inverted menu">
+<gunshow-editor-menu  class="ui inverted menu">
 
     <div class="ui container">
 
       <a href="https://github.com/cadorn/gunshow" class="header item">
-        Gunshow Editor
+        { config.editor.label }
       </a>
 
       <div class="right menu">
@@ -24,4 +24,4 @@
         opts.impl.call(this, opts);
     </script>
 
-</editor-menu>
+</gunshow-editor-menu>

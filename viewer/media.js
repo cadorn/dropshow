@@ -4,12 +4,19 @@ var tag = require('./media.tag');
 
 var SPINE = null;
 
-exports.mount = function (_SPINE) {
+exports.forSpine = function (_SPINE) {
     SPINE = _SPINE;
 
-    return SPINE.RIOT.mount(tag, {
-//        impl: impl
-    });
+    var opts = {
+    };
+    return {
+        mount: function () {
+            return SPINE.RIOT.mount(tag, opts);
+        },
+        getOpts: function () {
+            return opts;
+        }
+    };
 }
 
 
