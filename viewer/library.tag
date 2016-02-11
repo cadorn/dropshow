@@ -8,8 +8,10 @@
                 <td colspan="2" class="">
                     <div class="ui top attached tabular menu">
                         <a class="active item">Unassigned</a>
-                        <a class="item">All</a>
                         <div class="right menu">
+                          <a class="item" onclick={ requestLibrarySync }>
+                            Sync Library
+                          </a>
                             <a class="item" onclick={ requestClose }>
                               Close
                             </a>
@@ -22,7 +24,6 @@
                     <div class="ui basic segment scrolling">
 
                         <div class="ui four cards">
-                
                             <a if={ !associated } class="card" each={ images } data-id={ id } onclick={ notifyClick }>
                                 <div class="image">
                                     <gunshow-media url={ urls.thumbnail } id={ id }></gunshow-media>

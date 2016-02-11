@@ -40,7 +40,7 @@ SPINE.config = {
         label: "Gunshow Editor"
     },
     gun: {
-        namespacePrefix: "ns02/",
+        namespacePrefix: "ns03/",
         peer: {
             url: location.origin + '/gunshow/gun'
         }

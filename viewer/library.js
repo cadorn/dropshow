@@ -14,6 +14,7 @@ exports.forSpine = function (SPINE) {
             });
     
     
+            self.imagesAll = [];
             self.images = [];
 
             var associatedImages = {};
@@ -43,19 +44,28 @@ exports.forSpine = function (SPINE) {
                     }
                     return images[id];
                 });
+                self.imagesAll = SPINE.LODASH.sortBy(self.images, ['created_at', 'id']);
             }
 
             self.on("update", function () {
-                self.images.forEach(function (image) {
+                if (!insertionContext) {
+                    // Render no images when library is not showing.
+                    self.images = [];
+                    return;
+                }
+                self.images = self.imagesAll.map(function (image) {
                     image.associated = !!associatedImages[image.id];
+                    return image;
                 });
+                // We only show the first 250 images.
+                self.images = self.images.slice(0, 250);
             });
-    
-            
+
+
             function ensureWatching () {
                 if (ensureWatching._watching) return;
                 ensureWatching._watching = true;
-    
+
                 SPINE.data.watch(LIBRARY_NS, function () {
                     setImages(SPINE.data.getAll(LIBRARY_NS));
                     self.update();
@@ -69,10 +79,11 @@ exports.forSpine = function (SPINE) {
                     !event ||
                     !event.el
                 ) return;
-                
-                ensureWatching();
-    
+
                 insertionContext = event;
+
+                ensureWatching();
+                self.update();
     
                 SPINE.$.magnificPopup.open({
                     items: {
@@ -108,6 +119,8 @@ exports.forSpine = function (SPINE) {
                 SPINE.data.set(namespace, id, property, editor.doc.getValue());
     */
                 SPINE.$.magnificPopup.close();
+                
+                insertionContext = null;
             }
             
             
@@ -130,6 +143,10 @@ exports.forSpine = function (SPINE) {
                     }).shift());
                     SPINE.data.set(ns, id, "images", JSON.stringify(images));
                 }
+            }
+
+            self.requestLibrarySync = function () {
+                SPINE.events.trigger("request.library.sync");
             }
 
 /*    

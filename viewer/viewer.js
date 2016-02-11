@@ -29,6 +29,8 @@ exports.forSpine = function (SPINE) {
                     itemCount: (galleries[id].images && Object.keys(galleries[id].images).length) || 0
                 };
             });
+            self.galleries = SPINE.LODASH.sortBy(self.galleries, ['title', 'itemCount']);
+
             syncSelectedGallery = function () {
                 if (
                     self.state.selected.gallery &&
@@ -37,6 +39,9 @@ exports.forSpine = function (SPINE) {
                     self.gallery = galleries[self.state.selected.gallery];
                     if (typeof self.gallery.images === "string") {
                         self.gallery.images = JSON.parse(self.gallery.images);
+                    }
+                    if (self.gallery.images) {
+                        self.gallery.images = SPINE.LODASH.sortBy(self.gallery.images, ['created_at', 'id']);
                     }
                     self.gallery.id = self.state.selected.gallery;
                 } else {
@@ -105,60 +110,6 @@ console.log("GALLERY CHANGED", value);
                 self.update();
             });
         });
-
-        
-/*
-
-        
-        self.images = [];
-        self.tags = [];
-
-        var imagesByTag = {};
-
-
-        SPINE.images.then(function(data, xhr) {
-        
-//console.log("IMAGES", data);
-            
-            var changes = {
-                images: data,
-                tags: []
-            };
-            changes.images = changes.images.map(function (image, i) {
-                return {
-                    caption: (image.context && image.context.custom && image.context.custom.caption) || "",
-                    urls: image.public_urls,
-                    tags: image.tags.map(function (tag) {
-                        if (!imagesByTag[tag]) imagesByTag[tag] = [];
-                        imagesByTag[tag].push(i);
-                        return Object.keys(imagesByTag).indexOf(tag);
-                    })
-                };
-            });
-            changes.tags = Object.keys(imagesByTag).map(function (tag, i) {
-                return {
-                    i: i,
-                    // TODO: Get gallery id from data source.
-                    id: "i" + i,
-                    label: tag,
-                    count: imagesByTag[tag].length
-                };
-            });
-
-            self.update(changes);
-        }, console.error);
-
-
-        self.galleries = {};
-
-
-        self.selectTab = function (event) {
-            SPINE.events.on("select.gallery", event.item.id);
-
-//            self.activeTag = event.item.i;
-//            loadGalleryData(self.activeTag);
-        }
-*/
     }
 
 

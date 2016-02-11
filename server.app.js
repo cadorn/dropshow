@@ -91,10 +91,9 @@ exports.app = function (options) {
 
                 result.resources.forEach(function (resource) {
                     if (resource.resource_type === "image") {
-
                         resource.public_urls = {
-                            thumbnail: cloudinary.url(resource.url, {
-                                width: 400,
+                            thumbnail: cloudinary.url(resource.public_id, {
+                                width: 200,
                                 height: 200,
                                 crop: "fill"
                             })
@@ -107,6 +106,8 @@ exports.app = function (options) {
                 tags: true,
                 context: true,
                 direction: "desc",
+                max_results: 250,
+                next_cursor: req.body.cursor || null,
                 prefix: (
                     options.cloudinary.import &&
                     options.cloudinary.import.folder &&
