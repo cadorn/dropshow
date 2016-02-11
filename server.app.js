@@ -150,8 +150,17 @@ exports.app = function (options) {
 
 
 
-    function ensureServer () {
+    function ensureServer (req) {
         if (ensureServer._ensured) return;
+if (req) console.log("options.gun.server 0", req._server);
+        if (
+            req &&
+            req._server
+        ) {
+            gun.wsp(req._server);
+            ensureServer._ensured = true;
+            return;
+        }
         if (
             !options.gun ||
             !options.gun.server
@@ -164,13 +173,13 @@ console.log("options.gun.server 1", options.gun.server);
         ) {
             gun.wsp(options.gun.server);
             ensureServer._ensured = true;
-        } else {
-            var server = options.gun.server();
+            return;
+        }
+        var server = options.gun.server();
 console.log("options.gun.server 2", server);
-            if (server) {
-                gun.wsp(server);
-                ensureServer._ensured = true;
-            }
+        if (server) {
+            gun.wsp(server);
+            ensureServer._ensured = true;
         }
     }
     
@@ -188,7 +197,7 @@ console.log("options.gun.server 2", server);
             req.url = params[0];
         }
 
-        ensureServer();
+        ensureServer(req);
 
         return app(req, res, function (err) {
             if (err) {

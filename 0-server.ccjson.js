@@ -20,11 +20,6 @@ exports.forLib = function (LIB) {
 
                     return LIB.Promise.resolve({
                         app: function () {
-
-                            config.gun.server = function () {
-                                return (LIB.GLOBALS && LIB.GLOBALS.server);
-                            }
-
                             return LIB.Promise.resolve(
                                 ccjson.makeDetachedFunction(
                                     APP.app(config)
