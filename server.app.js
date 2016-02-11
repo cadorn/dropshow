@@ -158,6 +158,7 @@ exports.app = function (options) {
         ) {
             return;
         }
+console.log("options.gun.server 1", options.gun.server);
         if (
             typeof options.gun.server.use === "function"
         ) {
@@ -165,6 +166,7 @@ exports.app = function (options) {
             ensureServer._ensured = true;
         } else {
             var server = options.gun.server();
+console.log("options.gun.server 2", server);
             if (server) {
                 gun.wsp(server);
                 ensureServer._ensured = true;
