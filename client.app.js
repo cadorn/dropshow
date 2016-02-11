@@ -62,10 +62,6 @@ const COMPONENTS = {
 };
 
 
-SPINE.DATA = require("./lib/data").forSpine(SPINE);
-SPINE.data = SPINE.DATA.data;
-
-SPINE.LIBRARY = require("./lib/library").forSpine(SPINE);
 
 
 
@@ -142,13 +138,16 @@ function notifyUpdated () {
     notifyUpdated.__debounced();
 }
 
-var tags = [];
-Object.keys(COMPONENTS).forEach(function (name) {
-    tags = tags.concat(COMPONENTS[name].mount());
-});
-tags.forEach(function (tag) {
-    tag.on('updated', notifyUpdated);
-});
+function bootData () {
+    if (bootData._booted) {
+        return;
+    }
+    bootData._booted = true;
+    
+    SPINE.DATA = require("./lib/data").forSpine(SPINE);
+    SPINE.data = SPINE.DATA.data;
+    SPINE.LIBRARY = require("./lib/library").forSpine(SPINE);
+}
 
 
 // TODO: Register with PINF loader if global available.
@@ -158,6 +157,9 @@ window._GUNSHOW_API = {
             mountTags._config = SPINE.config;
         }
         SPINE.config = SPINE.LODASH.merge(mountTags._config, config);
+        
+        bootData();
+        
         var tags = [];
         elements.forEach(function (element) {
             var name = element[1].tag.replace(/^gunshow-/, "");
@@ -170,4 +172,19 @@ window._GUNSHOW_API = {
         });
     }
 }
+
+window._GUNSHOW_START = function () {
+
+    bootData();
+
+    var tags = [];
+    Object.keys(COMPONENTS).forEach(function (name) {
+        tags = tags.concat(COMPONENTS[name].mount());
+    });
+    tags.forEach(function (tag) {
+        tag.on('updated', notifyUpdated);
+    });
+}
+
+
 
