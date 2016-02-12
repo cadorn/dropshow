@@ -10,6 +10,7 @@ require("../gunfield/node_modules/gun/gun.js");
 
 const SPINE = {
     $: $,
+    ASYNC: require("async"),
     CODEMIRROR: require("./node_modules/codemirror/lib/codemirror"),
     UUID: require("uuid"),
     LODASH: require("lodash"),
