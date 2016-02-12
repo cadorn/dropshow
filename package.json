@@ -4,6 +4,7 @@
   "main": "server.app.js",
   "dependencies": {
     "@typicode/pegasus": "^0.3.2",
+    "async": "^1.5.2",
     "bluebird": "^3.2.2",
     "body-parser": "^1.15.0",
     "browserify": "^13.0.0",
@@ -13,7 +14,6 @@
     "interact.js": "^1.2.6",
     "jquery": "^2.2.0",
     "lodash": "^4.3.0",
-    "magnific-popup": "^1.0.1",
     "magnific-popup": "^1.0.1",
     "riot": "^2.3.15",
     "riotify": "^0.1.2",
