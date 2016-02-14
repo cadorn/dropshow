@@ -23,9 +23,8 @@ console.log("register galley watcher");
 
             SPINE.data.watch("gallery", function () {
 
-console.log("galley changed");
-
                 SPINE.data.getAll("gallery").then(function (galleries) {
+
                     associatedImages = {};
                     Object.keys(galleries).forEach(function (galleryId) {
                         var images = galleries[galleryId].images || "[]";
@@ -33,12 +32,11 @@ console.log("galley changed");
                             images = JSON.parse(images);
                         }
                         images.forEach(function (image) {
+                            if (!image) return;
                             associatedImages[image.id] = true;
                         });
                     });
 
-console.log("new galley data", galleries);
-                
                     // TODO: Only fire update if associated images change.
                     self.update();
                     return null;
@@ -65,12 +63,11 @@ console.log("new galley data", galleries);
                     self.images = [];
                     return;
                 }
-                self.images = self.imagesAll.map(function (image) {
-                    image.associated = !!associatedImages[image.id];
-                    return image;
+                self.images = self.imagesAll.filter(function (image) {
+                    return (!associatedImages[image.id]);
                 });
-                // We only show the first 250 images.
-                self.images = self.images.slice(0, 250);
+                // We only show the first 50 images.
+                self.images = self.images.slice(0, 100);
             });
 
 
@@ -98,6 +95,8 @@ console.log("new galley data", galleries);
 
                 ensureWatching();
                 self.update();
+                
+                imagesToAdd = {};
     
                 SPINE.$.magnificPopup.open({
                     items: {
@@ -121,6 +120,11 @@ console.log("new galley data", galleries);
                 });
             });
             
+            
+            
+            var imagesToAdd = {};
+            
+            
             self.requestClose = function () {
         
 //    console.log("insert", insertionContext);
@@ -133,6 +137,40 @@ console.log("new galley data", galleries);
                 SPINE.data.set(namespace, id, property, editor.doc.getValue());
     */
                 SPINE.$.magnificPopup.close();
+
+                if (Object.keys(imagesToAdd).length > 0) {
+
+                    var idParts = insertionContext.id.split("/");
+                    var id = idParts.pop();
+                    var ns = idParts.join("/");
+    
+                    return SPINE.data.get(ns, id).then(function (gallery) {
+                        var images = gallery.images || "[]";
+                        if (typeof images === "string") {
+                            images = JSON.parse(images);
+                        }
+                        images = images.filter(function (image) {
+                            if (!image) return false;
+                            return true;
+                        });
+                        Object.keys(imagesToAdd).forEach(function (newImageId) {
+                            if (images.filter(function (image) {
+                                return (image.id === newImageId);
+                            }).length === 0) {
+                                images.push(self.imagesAll.filter(function (image) {
+                                    return (image.id === newImageId);
+                                }).shift());
+                            }
+                        });
+
+                        imagesToAdd = {};
+
+                        return SPINE.data.set(ns, id, "images", JSON.stringify(images));
+                    }).catch(function (err) {
+                        console.error(err);
+                        throw err;
+                    });
+                }
                 
                 insertionContext = null;
             }
@@ -140,25 +178,9 @@ console.log("new galley data", galleries);
             
             self.notifyClick = function (event) {
 
-                var idParts = insertionContext.id.split("/");
-                var id = idParts.pop();
-                var ns = idParts.join("/");
-                
-                SPINE.data.get(ns, id).then(function (gallery) {
-                    var images = gallery.images || "[]";
-                    if (typeof images === "string") {
-                        images = JSON.parse(images);
-                    }
-                    if (images.filter(function (image) {
-                        return (image.id === event.item.id);
-                    }).length === 0) {
-                        images.push(self.images.filter(function (image) {
-                            return (image.id === event.item.id);
-                        }).shift());
-                        return SPINE.data.set(ns, id, "images", JSON.stringify(images));
-                    }
-                    return null;
-                }).catch(console.error);
+                associatedImages[event.item.id] = true;
+                imagesToAdd[event.item.id] = true;
+                self.update();
             }
 
             self.requestLibrarySync = function () {

@@ -24,7 +24,7 @@
                     <div class="ui basic segment scrolling">
 
                         <div class="ui four cards">
-                            <a if={ !associated } class="card" each={ images } data-id={ id } onclick={ notifyClick }>
+                            <a class="card" each={ images } data-id={ id } onclick={ notifyClick }>
                                 <div class="image">
                                     <gunshow-media url={ urls.thumbnail } id={ id }></gunshow-media>
                                 </div>

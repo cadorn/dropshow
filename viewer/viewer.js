@@ -15,9 +15,16 @@ exports.forSpine = function (SPINE) {
         
         var syncSelectedGallery = null;
         
+        
+        var removedImages = {};
 
         function setGalleries (galleries) {
-console.log("galleries", galleries);            
+
+            if (Object.keys(removedImages).length > 0) {
+                return;
+            }
+    
+//console.log("galleries", galleries);            
             self.galleries = Object.keys(galleries).map(function (id) {
 
                 if (typeof galleries[id].images === "string") {
@@ -95,12 +102,21 @@ console.log("GALLERY CHANGED", value);
             });
         }
         self.requestItemRemove = function (event) {
+            
+            removedImages[event.item.id] = true;
+            
             var images = self.gallery.images;
             images = images.filter(function (image) {
+                if (!image) return false;
                 return (image.id !== event.item.id);
             });
+            self.gallery.images = images;
+            self.update();
             SPINE.data.set("gallery", self.gallery.id, "images", JSON.stringify(images)).then(function () {
-                self.update();
+                delete removedImages[event.item.id];
+                if (Object.keys(removedImages).length === 0) {
+                    self.update();
+                }
             }).catch(console.error);
         }
 
