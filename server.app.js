@@ -5,6 +5,7 @@ const GUN = require('../gunfield/node_modules/gun');
 const BROWSERIFY = require("browserify");
 const RIOTIFY = require("riotify");
 const BODY_PARSER = require('body-parser');
+const POUCHFIELD = require("../pouchfield/server.app");
 
 const DATA = require("./lib/data");
 
@@ -77,8 +78,10 @@ exports.app = function (options) {
 */
 
     var app = EXPRESS();
-    
-    
+
+
+    app.use('/pouchfield', POUCHFIELD.app(options.pouchfield));
+
     var jsonParser = BODY_PARSER.json();
     app.post('/cloudinary.js', jsonParser, function (req, res, next) {
 
@@ -136,6 +139,119 @@ exports.app = function (options) {
 			return res.end(data.toString());
 		});
 	});
+
+
+
+console.log("options.postgres.url", options.postgres.url);
+    
+    const KNEX = require("knex");
+	var knexConnection = KNEX({
+	    client: 'pg',
+        connection: options.postgres.url + "?ssl=true&sslfactory=org.postgresql.ssl.NonValidatingFactory"
+	});
+    var knex = function (tableName, query) {
+		if (typeof query === "undefined" && typeof tableName === "function") {
+			query = tableName;
+			tableName = null;
+		}
+		var table = knexConnection(tableName);
+		return query(table).then(function (resp) {
+
+//console.log("RESPONSE:", resp);
+
+			return resp;
+		}).catch(function (err) {
+			console.error("DB Error:", err.stack);
+			throw err;
+		});
+	}	
+
+    app.post('/data', jsonParser, function (req, res, next) {
+
+        console.log("call data api", req.body);
+
+        function ensureTable (tableName) {
+            return knexConnection.schema.hasTable(tableName).then(function(exists) {
+                if (exists) return null;
+                return knexConnection.schema.createTable(tableName, function (table) {
+                    table.string('id').primary();
+                    table.text("data");
+                });
+            });
+        }
+
+        return ensureTable(req.body.table).then(function () {
+
+            res.setHeader('Content-Type', 'application/json');
+            
+            function respond (data) {
+                return res.end(JSON.stringify(data, null, 4));
+            }
+
+            if (req.body.method === "all") {
+                return knex(req.body.table, function (table) {
+                    return table.select("*");
+                }).then(function (result) {
+                    var records = {};
+                    result.forEach(function (record) {
+                        records[record.id] = JSON.parse(record.data);
+                        records[record.id].id = record.id;
+                    });
+                    return respond(records);
+                });
+            } else
+            if (req.body.method === "create") {
+                return knex(req.body.table, function (table) {
+                    var data = {
+                        id: req.body.id,
+                        data: JSON.stringify(req.body.data)
+                    };
+                    return table.returning('id').insert(data);
+                }).then(function (result) {
+                    return respond(result);
+                });
+            } else
+            if (req.body.method === "update") {
+                return knex(req.body.table, function (table) {
+                    return table.update({
+                        data: JSON.stringify(req.body.data)
+                    }).where({
+                        id: req.body.id
+                    });
+                }).then(function (result) {
+                    return respond(result);
+                });
+            } else
+            if (req.body.method === "get") {
+                return knex(req.body.table, function (table) {
+                    return table.where({
+                        id: req.body.id
+                    });
+                }).then(function (result) {
+                    var record = result.shift();
+                    var data = JSON.parse(record.data);
+                    data.id = record.id;
+                    return respond(data);
+                });
+            } else
+            if (req.body.method === "has") {
+                return knex(req.body.table, function (table) {
+                    return table.where({
+                        'id': req.body.id
+                    });
+                }).then(function (result) {
+                    if (result.length === 1) {
+                        return respond(true);
+                    }
+                    return respond(false);
+                });
+            } else {
+console.log("method not found req.body", req.body);
+            }
+            return respond({});
+        });
+    });
+
 
 
     app.use('/magnific-popup', EXPRESS.static(PATH.join(require.resolve("magnific-popup/package.json"), "../dist")));

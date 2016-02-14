@@ -17,6 +17,7 @@ exports.forSpine = function (SPINE) {
         
 
         function setGalleries (galleries) {
+console.log("galleries", galleries);            
             self.galleries = Object.keys(galleries).map(function (id) {
 
                 if (typeof galleries[id].images === "string") {
@@ -98,16 +99,19 @@ console.log("GALLERY CHANGED", value);
             images = images.filter(function (image) {
                 return (image.id !== event.item.id);
             });
-            SPINE.data.set("gallery", self.gallery.id, "images", JSON.stringify(images));
-            self.update();
+            SPINE.data.set("gallery", self.gallery.id, "images", JSON.stringify(images)).then(function () {
+                self.update();
+            }).catch(console.error);
         }
 
 
         self.on("mount", function () {
             var ns = SPINE.UTIL.makeIdForNode(SPINE.$(self.root));
             SPINE.data.watch(ns, function () {
-                setGalleries(SPINE.data.getAll(ns));
-                self.update();
+                SPINE.data.getAll(ns).then(function (records) {
+                    setGalleries(records);
+                    self.update();
+                }).catch(console.error);
             });
         });
     }

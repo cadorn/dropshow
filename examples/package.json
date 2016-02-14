@@ -1,5 +1,5 @@
 {
-  "name": "gunshow-examles",
+  "name": "gunshow-examples",
   "private": true,
   "dependencies": {
     "semantic-ui-css": "^2.1.8"

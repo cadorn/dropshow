@@ -30,6 +30,14 @@ app.use('/gunshow', GUNSHOW.app({
         import: {
             folder: "originals"
         }
+    },
+    pouchfield: {
+        redis: {
+            url: process.env.SERVICE_REDIS_URL        
+        }
+    },
+    postgres: {
+        url: process.env.SERVICE_POSTGRES_URL
     }
 }));
 

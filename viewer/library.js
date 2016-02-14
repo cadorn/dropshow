@@ -19,23 +19,35 @@ exports.forSpine = function (SPINE) {
 
             var associatedImages = {};
 
+console.log("register galley watcher");
+
             SPINE.data.watch("gallery", function () {
-                var galleries = SPINE.data.getAll("gallery");
-                associatedImages = {};
-                Object.keys(galleries).forEach(function (galleryId) {
-                    var images = galleries[galleryId].images || "[]";
-                    if (typeof images === "string") {
-                        images = JSON.parse(images);
-                    }
-                    images.forEach(function (image) {
-                        associatedImages[image.id] = true;
+
+console.log("galley changed");
+
+                SPINE.data.getAll("gallery").then(function (galleries) {
+                    associatedImages = {};
+                    Object.keys(galleries).forEach(function (galleryId) {
+                        var images = galleries[galleryId].images || "[]";
+                        if (typeof images === "string") {
+                            images = JSON.parse(images);
+                        }
+                        images.forEach(function (image) {
+                            associatedImages[image.id] = true;
+                        });
                     });
+
+console.log("new galley data", galleries);
+                
+                    // TODO: Only fire update if associated images change.
+                    self.update();
+                    return null;
+                }).catch(function (err) {
+                    console.error(err);
                 });
-                // TODO: Only fire update if associated images change.
-                self.update();
             });
 
-    
+
             function setImages (images) {
                 self.images = Object.keys(images).map(function (id) {
                     images[id].id = id;
@@ -67,8 +79,10 @@ exports.forSpine = function (SPINE) {
                 ensureWatching._watching = true;
 
                 SPINE.data.watch(LIBRARY_NS, function () {
-                    setImages(SPINE.data.getAll(LIBRARY_NS));
-                    self.update();
+                    SPINE.data.getAll(LIBRARY_NS).then(function (images) {
+                        setImages(images);
+                        self.update();
+                    }).catch(console.error);
                 });
             }
     
@@ -130,19 +144,21 @@ exports.forSpine = function (SPINE) {
                 var id = idParts.pop();
                 var ns = idParts.join("/");
                 
-                var gallery = SPINE.data.get(ns, id);
-                var images = gallery.images || "[]";
-                if (typeof images === "string") {
-                    images = JSON.parse(images);
-                }
-                if (images.filter(function (image) {
-                    return (image.id === event.item.id);
-                }).length === 0) {
-                    images.push(self.images.filter(function (image) {
+                SPINE.data.get(ns, id).then(function (gallery) {
+                    var images = gallery.images || "[]";
+                    if (typeof images === "string") {
+                        images = JSON.parse(images);
+                    }
+                    if (images.filter(function (image) {
                         return (image.id === event.item.id);
-                    }).shift());
-                    SPINE.data.set(ns, id, "images", JSON.stringify(images));
-                }
+                    }).length === 0) {
+                        images.push(self.images.filter(function (image) {
+                            return (image.id === event.item.id);
+                        }).shift());
+                        return SPINE.data.set(ns, id, "images", JSON.stringify(images));
+                    }
+                    return null;
+                }).catch(console.error);
             }
 
             self.requestLibrarySync = function () {

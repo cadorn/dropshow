@@ -18,9 +18,11 @@ const SPINE = {
     RIOT: require('riot'),
     GUN: window.Gun,
     INTERACT: require("interact.js"),
+    EVENTS: require("events"),
     Promise: require("bluebird")
 };
 SPINE.DOM_OUTLINE = require("./lib/dom-outline").forSpine(SPINE).DomOutline;
+SPINE.POUCHFIELD = require("../pouchfield/client.app").forSpine(SPINE);
 
 SPINE.UTIL = require("./lib/util").forSpine(SPINE);
 
@@ -44,6 +46,12 @@ SPINE.config = {
         namespacePrefix: "ns03/",
         peer: {
             url: location.origin + '/gunshow/gun'
+        }
+    },
+    pouchdbfield: {
+        namespacePrefix: "ns03/",
+        peer: {
+            url: location.origin + '/gunshow/pouchfield/couchdb'
         }
     },
     baseUrl: "/gunshow",
@@ -70,7 +78,7 @@ const COMPONENTS = {
 SPINE.events.on("request.gallery.new", function (event) {
 
     SPINE.data.create(event.id, {
-        "title": "New Gallery",
+        "title": "_ New Gallery",
         "description": "About this gallery ..."
     });
 /*
