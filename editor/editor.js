@@ -69,7 +69,8 @@ exports.forSpine = function (SPINE) {
         var editor = null;
         self.on('mount', function() {
             editor = SPINE.CODEMIRROR.fromTextArea(SPINE.$("textarea#editor").get(0), {
-                lineNumbers: true
+                lineNumbers: false,
+                lineWrapping: true
             });
         });
 

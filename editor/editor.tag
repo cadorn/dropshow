@@ -34,6 +34,9 @@
         .gunshow-editable {
           border: 2px dotted #BA00CC !important;
         }
+        .CodeMirror {
+          font-size: 120%;
+        }
     </style>
 
 </gunshow-editor>

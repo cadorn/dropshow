@@ -79,6 +79,36 @@ exports.app = function (options) {
 
     var app = EXPRESS();
 
+/*
+    cloudinary.api.resources(function (result) {
+
+        var deleteIds = [];
+        result.resources.forEach(function (resource) {
+console.log("resource", resource.format, resource.resource_type);
+//                deleteIds.push(resource.public_id);
+        });
+        
+        deleteIds = deleteIds.splice(0, 100);
+
+console.log("deleteIds", deleteIds);
+
+        cloudinary.api.delete_resources(deleteIds, function (deleteResult) {
+            
+console.log("RESULT", deleteResult);
+
+console.log("result.next_cursor", result.next_cursor);
+
+        });
+
+    }, {
+        type: "upload",
+        tags: true,
+        context: true,
+        direction: "asc",
+        max_results: 500,
+        next_cursor: "68fafa05a0b799803984edbbae209050"
+    });
+*/
 
     app.use('/pouchfield', POUCHFIELD.app(options.pouchfield));
 

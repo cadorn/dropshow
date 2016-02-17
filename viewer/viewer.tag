@@ -4,7 +4,10 @@
     <div class="ui grid gunshow-viewer">
       <div class="four wide column">
         <div class="ui vertical fluid tabular menu">
-          <a each={ galleries } class={ item: true, active: id == gallery.id } onclick={ requestGallery }>{ title } ({ itemCount })</a>
+          <a each={ galleries } class={ item: true, active: id == gallery.id } onclick={ requestGallery }>
+            { title } ({ itemCount })
+            <div if={ type == "showcase" } class="ui horizontal label">SC</div>
+          </a>
           <a if={ state.mode == "edit" } class="item" onclick={ requestGalleryNew }>
             <i class="plus icon"></i>
           </a>
@@ -15,13 +18,21 @@
         <h1 data-id="title" data-editable="true" class="ui header">{ gallery.title }</h1>
         <p data-id="description" data-editable="true">{ gallery.description }</p>
 
-        <div class="ui container">
-          <a href="#" if={ state.mode == "edit" } onclick={ requestLibrary }>
-            <i class="big plus icon"></i>
+        
+        <div class="ui menu">
+          <a if={ state.mode == "edit" } class="item" onclick={ requestLibrary }>
+            Add Photos from Library
           </a>
+          <div class="right menu">
+            <a if={ gallery.type == "showcase" } class="item" href="/Showcase/{ gallery.id }" target="_blank">
+              Open Showcase
+            </a>
+            <a if={ gallery.type == "gallery" && !gallery.images } class="item" onclick={ requestMakeShowcase }>
+              Make into Showcase
+            </a>
+          </div>
         </div>
 
-          <br/>
           <br/>
 
         <div if={ gallery } class="ui four cards">

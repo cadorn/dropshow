@@ -64,8 +64,10 @@ SPINE.config = {
 
 const COMPONENTS = {
     "media": require("./viewer/media").forSpine(SPINE),
+    "text": require("./viewer/text").forSpine(SPINE),
     "viewer": require("./viewer/viewer").forSpine(SPINE),
     "library": require("./viewer/library").forSpine(SPINE),
+    "gallery": require("./viewer/gallery").forSpine(SPINE),
     "editor": require("./editor/editor").forSpine(SPINE),
     "editor-menu": require("./editor/editor-menu").forSpine(SPINE)
 };
@@ -172,6 +174,7 @@ window._GUNSHOW_API = {
         var tags = [];
         elements.forEach(function (element) {
             var name = element[1].tag.replace(/^gunshow-/, "");
+            if (!COMPONENTS[name]) return;
             tags = tags.concat(
                 SPINE.RIOT.mount(element[0].get(0), element[1].tag, COMPONENTS[name].getOpts())
             );

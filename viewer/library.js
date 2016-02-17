@@ -12,14 +12,13 @@ exports.forSpine = function (SPINE) {
             SPINE.events.on("changed.state", function () {
                 self.update();
             });
-    
-    
+
+            var insertionContext = null;
+
             self.imagesAll = [];
             self.images = [];
 
             var associatedImages = {};
-
-console.log("register galley watcher");
 
             SPINE.data.watch("gallery", function () {
 
@@ -33,7 +32,14 @@ console.log("register galley watcher");
                         }
                         images.forEach(function (image) {
                             if (!image) return;
-                            associatedImages[image.id] = true;
+                            if (
+                                insertionContext &&
+                                insertionContext.type === "showcase"
+                            ) {
+                                // Allow to associate more than once.
+                            } else {
+                                associatedImages[image.id] = true;
+                            }
                         });
                     });
 
@@ -56,7 +62,10 @@ console.log("register galley watcher");
                 });
                 self.imagesAll = SPINE.LODASH.sortBy(self.images, ['created_at', 'id']);
             }
-
+            
+            
+            var selectedPage = 1;
+            
             self.on("update", function () {
                 if (!insertionContext) {
                     // Render no images when library is not showing.
@@ -64,11 +73,58 @@ console.log("register galley watcher");
                     return;
                 }
                 self.images = self.imagesAll.filter(function (image) {
+                    image.pendingAddition = imagesToAdd[image.id] || false
                     return (!associatedImages[image.id]);
                 });
-                // We only show the first 50 images.
-                self.images = self.images.slice(0, 100);
+                
+                var imagesPerPage = 100;
+                if (
+                    insertionContext &&
+                    insertionContext.type === "showcase"
+                ) {
+                    imagesPerPage = 250;
+                }
+                
+                if (imagesPerPage < self.images.length) {
+                    var pagesCount = Math.ceil(self.images.length / imagesPerPage);
+                    var pages = [];
+                    for (var i=0 ; i<pagesCount; i++) {
+                        pages.push({
+                            "number": ""+(i+1),
+                            "selected": (selectedPage == (i+1))
+                        });
+                    }
+
+                    self.navbar = {
+                        previous: (parseInt(selectedPage) - 1),
+                        pages: pages,
+                        next: (parseInt(selectedPage) + 1)
+                    };
+                    if (!self.navbar.previous) {
+                        self.navbar.previous = "";
+                    } else {
+                        self.navbar.previous = "" + self.navbar.previous;
+                    }
+                    if (self.navbar.next > pagesCount) {
+                        self.navbar.next = "";
+                    } else {
+                        self.navbar.next = "" + self.navbar.next;
+                    }
+
+                    self.images = self.images.slice(
+                        (selectedPage - 1) * imagesPerPage,
+                        ((selectedPage - 1) * imagesPerPage) + imagesPerPage
+                    );
+
+                } else {
+                    self.navbar = null;
+                }
             });
+
+            self.requestPage = function (event) {
+                selectedPage = ""+event.target.dataset.id;
+                self.update();
+            }
 
 
             function ensureWatching () {
@@ -83,8 +139,6 @@ console.log("register galley watcher");
                 });
             }
     
-            var insertionContext = null;
-        
             SPINE.events.on("request.library", function (event) {
                 if (
                     !event ||
@@ -93,10 +147,13 @@ console.log("register galley watcher");
 
                 insertionContext = event;
 
+console.log("insertionContext", insertionContext);
+
                 ensureWatching();
                 self.update();
                 
                 imagesToAdd = {};
+                selectedPage = 1;
     
                 SPINE.$.magnificPopup.open({
                     items: {
@@ -164,6 +221,7 @@ console.log("register galley watcher");
                         });
 
                         imagesToAdd = {};
+                        insertionContext = null;
 
                         return SPINE.data.set(ns, id, "images", JSON.stringify(images));
                     }).catch(function (err) {
@@ -178,7 +236,6 @@ console.log("register galley watcher");
             
             self.notifyClick = function (event) {
 
-                associatedImages[event.item.id] = true;
                 imagesToAdd[event.item.id] = true;
                 self.update();
             }

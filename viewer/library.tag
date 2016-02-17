@@ -17,6 +17,16 @@
                             </a>
                         </div>
                     </div>
+                    
+                    <div if={ navbar } class="ui right floated pagination menu">
+                        <a if={ navbar.previous } class="icon item" onclick={ requestPage } data-id={ navbar.previous }>
+                          <i class="left chevron icon" data-id={ navbar.previous }></i>
+                        </a>
+                        <a each={ navbar.pages } class={ item: true, active: selected } onclick={ requestPage } data-id={ number }>{ number }</a>
+                        <a if={ navbar.next } class="icon item" onclick={ requestPage } data-id={ navbar.next }>
+                          <i class="right chevron icon" data-id={ navbar.next }></i>
+                        </a>
+                      </div>
                 </td>
             </tr>
             <tr>
@@ -26,6 +36,9 @@
                         <div class="ui four cards">
                             <a class="card" each={ images } data-id={ id } onclick={ notifyClick }>
                                 <div class="image">
+                                    <div if={ pendingAddition } class="ui black ribbon label">
+                                        Added
+                                    </div>                                
                                     <gunshow-media url={ urls.thumbnail } id={ id }></gunshow-media>
                                 </div>
                             </a>
