@@ -23,7 +23,7 @@ exports.forSpine = function (SPINE) {
             if (Object.keys(removedImages).length > 0) {
                 return;
             }
-    
+
 //console.log("galleries", galleries);            
             self.galleries = Object.keys(galleries).map(function (id) {
 
@@ -31,8 +31,8 @@ exports.forSpine = function (SPINE) {
 
                 if (typeof galleries[id].images === "string") {
                     galleries[id].images = JSON.parse(galleries[id].images);
-                }                
-                
+                }
+
                 return {
                     id: id,
                     type: galleries[id].type,
@@ -55,8 +55,20 @@ exports.forSpine = function (SPINE) {
                         self.gallery.images = SPINE.LODASH.sortBy(self.gallery.images, ['created_at', 'id']);
                     }
                     self.gallery.id = self.state.selected.gallery;
+
+                    SPINE.data.where("library/images/all", {
+                        "id": SPINE.LODASH.map(self.gallery.images, "id")
+                    }).then(function (records) {
+
+                        self.gallery.images = Object.keys(records).map(function (id) {
+                            return records[id];
+                        });
+
+                        self.update();
+                    }).catch(console.error);
                 } else {
                     self.gallery = null;
+                    self.update();
                 }
             };
             syncSelectedGallery();
@@ -136,7 +148,6 @@ console.log("GALLERY CHANGED", value);
             SPINE.data.watch(ns, function () {
                 SPINE.data.getAll(ns).then(function (records) {
                     setGalleries(records);
-                    self.update();
                 }).catch(console.error);
             });
         });

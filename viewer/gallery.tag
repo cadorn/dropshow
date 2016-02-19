@@ -1,22 +1,21 @@
 
 <gunshow-gallery class="gunshow-gallery">
 
-    <div if={ gallery } data-id={ gallery.id }>
 
-        <h1 data-id="title" data-editable="true" class="ui header">{ gallery.title }</h1>
+    <div if={ gallery } data-id={ gallery.id } class="ui basic padded segment">
+        <h2 class="ui header" data-id="title">{ gallery.title }</h2>
+
+        <gunshow-text text={ gallery.description }></gunshow-text>
         
-        <div class="ui basic very padded description segment">
-        
-            <gunshow-text text={ gallery.description }></gunshow-text>
-        
-        </div>
     </div>
     
-    <div class="ui four cards">
+    <br/>
+
+    <div class="ui cards lightbox-boundary">
     
-        <div class="card" each={ gallery.images } data-id={ id }>
+        <div class="card" each={ gallery.images } data-id={ id } onclick={ requestLightbox }>
             <div class="image">
-                <gunshow-media url={ urls.thumbnail }></gunshow-media>
+                <gunshow-media url={ url } id={ id } width="275" height="180"></gunshow-media>
             </div>
             <div if={ parent.state.mode == "edit" }  class="content">
                 <a href="#" onclick={ requestItemRemove }>
@@ -31,8 +30,12 @@
     </script>
 
     <style>
-      .gunshow-gallery .description.segment {
+      .gunshow-gallery P {
         font-size: 120%;
+        margin-bottom: 8px;
+      }
+      .gunshow-gallery IMG:hover {
+        cursor: pointer !important;
       }
     </style>
 

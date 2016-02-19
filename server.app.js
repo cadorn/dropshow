@@ -1,9 +1,9 @@
 
 const PATH = require("path");
+const FS = require("fs-extra");
 const EXPRESS = require('express');
 const GUN = require('../gunfield/node_modules/gun');
-const BROWSERIFY = require("browserify");
-const RIOTIFY = require("riotify");
+const SEND = require("send");
 const BODY_PARSER = require('body-parser');
 const POUCHFIELD = require("../pouchfield/server.app");
 
@@ -15,7 +15,9 @@ exports.app = function (options) {
     if (!options.s3.secret) {
         throw new Error("Missing secret config credentials! Load them into your environment first.");
     }
-
+    
+    var gun = null;
+/*
     var gun = GUN({
     //	file: 'data.json',
     	s3: {
@@ -28,7 +30,7 @@ exports.app = function (options) {
     	},
     	ws: options.ws || {}
     });
-
+*/
     var cloudinary = require('cloudinary');
     cloudinary.config({ 
         cloud_name: options.cloudinary.cloud_name,
@@ -124,13 +126,20 @@ console.log("result.next_cursor", result.next_cursor);
 
                 result.resources.forEach(function (resource) {
                     if (resource.resource_type === "image") {
-                        resource.public_urls = {
+
+//console.log("resource.public_id", resource);
+
+                        resource.url = resource.url;
+                        /*
+                        {
                             thumbnail: cloudinary.url(resource.public_id, {
-                                width: 200,
-                                height: 200,
-                                crop: "fill"
+                                width: 275,
+                                height: 180,
+                                crop: "fill",
+                                gravity: "center"
                             })
                         };
+                        */
                     }
                 });
                 return res.end(JSON.stringify(result, null, 4));
@@ -153,26 +162,96 @@ console.log("result.next_cursor", result.next_cursor);
 
 
     // TODO: Move these into gunshow lib/plugins.
-    app.get('/app.js', function (req, res, next) {
-		var browserify = BROWSERIFY({
-			basedir: __dirname,
-			entries: [
-			    'client.app.js'
-		    ]
-		});
-		browserify.transform(RIOTIFY, {});
-		return browserify.bundle(function (err, data) {
-			if (err) return next(err);
-            res.writeHead(200, {
-                "Content-type": "application/javascript"
-            });
-			return res.end(data.toString());
-		});
+    app.get(/(\/app(?:\.dist)?\.js)$/, function (req, res, next) {
+
+    	var requestedFilename = "/client.app.js";
+    	var sourceFilename = requestedFilename.replace(/\.dist\./, ".");
+
+        var sourcePath = PATH.join(__dirname, sourceFilename);
+        var distPath = PATH.join(options.build.distPath, sourceFilename);
+
+        function bundleFiles (basedir, entries, distPath, callback) {
+    		var browserify = require("browserify")({
+    			basedir: basedir,
+    			entries: entries
+    		});
+    		browserify.transform(require("riotify"), {});
+    		return browserify.bundle(function (err, data) {
+    			if (err) return callback(err);
+    
+    			function checkIfChanged (callback) {
+    				return FS.exists(distPath, function (exists) {
+    					if (!exists) return callback(null, true);
+    					return FS.readFile(distPath, "utf8", function (err, existingData) {
+    					    if (err) return callback(err);
+    						if (existingData === data) {
+    						    return callback(null, false);
+    						}
+						    return callback(null, true);
+    					});
+    				});
+    			}
+    			
+    			return checkIfChanged(function (err, changed) {
+    			    if (err) return callback(err);
+    				if (!changed) return callback(null);
+    
+    		        return FS.outputFile(distPath, data, "utf8", function (err) {
+    		        	if (err) return callback(err);
+    		        	
+    		        	return callback(null);
+    		        });
+    			});
+    		});
+        }
+
+        function returnDistFile () {
+            return SEND(req, PATH.basename(distPath), {
+        		root: PATH.dirname(distPath),
+        		maxAge: options.build.clientCacheTTL || 0
+        	}).on("error", next).pipe(res);
+        }
+
+		return FS.exists(distPath, function (exists) {
+
+	        if (
+	        	exists &&
+	        	(
+	        		/\.dist\./.test(req.params[0]) ||
+	        		options.build.alwaysRebuild === false
+	        	)
+	        ) {
+	           	// We return a pre-built file if it exists and are being asked for it
+				return returnDistFile();
+	        } else {
+
+	           	// We build file, store it and return it
+
+				return FS.exists(sourcePath, function (exists) {
+	
+		            if (!exists) return next();
+
+		            console.log("Browserifying '" + sourcePath + "' ...");
+
+					return bundleFiles(
+						PATH.dirname(sourcePath),
+						[
+							PATH.basename(sourcePath)
+						],
+						distPath,
+						function (err) {
+						    if (err) return next(err);
+
+    						return returnDistFile();
+						}
+					);
+				});
+	        }
+        });
 	});
 
 
-
-console.log("options.postgres.url", options.postgres.url);
+//console.log("options.postgres.url", options.postgres.url);
     
     const KNEX = require("knex");
 	var knexConnection = KNEX({
@@ -221,6 +300,28 @@ console.log("options.postgres.url", options.postgres.url);
             if (req.body.method === "all") {
                 return knex(req.body.table, function (table) {
                     return table.select("*");
+                }).then(function (result) {
+                    var records = {};
+                    result.forEach(function (record) {
+                        records[record.id] = JSON.parse(record.data);
+                        records[record.id].id = record.id;
+                    });
+                    return respond(records);
+                });
+            } else
+            if (req.body.method === "where") {
+                return knex(req.body.table, function (table) {
+                    var query = table.select("*");
+                    Object.keys(req.body.query).forEach(function (name) {
+
+                        if (Array.isArray(req.body.query[name])) {
+console.log("where in", name, req.body.query[name]);
+                            query = query.whereIn(name, req.body.query[name]);
+                        } else {
+                            query = query.where(name, req.body.query[name]);
+                        }
+                    });
+                    return query;
                 }).then(function (result) {
                     var records = {};
                     result.forEach(function (record) {
@@ -287,14 +388,14 @@ console.log("method not found req.body", req.body);
     app.use('/magnific-popup', EXPRESS.static(PATH.join(require.resolve("magnific-popup/package.json"), "../dist")));
     app.use('/codemirror', EXPRESS.static(PATH.join(require.resolve("codemirror/package.json"), "../lib")));
 
-
+/*
     app.use(function (req, res, next) {
     	if(gun.wsp.server(req, res)) {
     		return; // filters gun requests!
     	}
     	return next();
     });
-
+*/
 
 
     function ensureServer (req) {
@@ -304,7 +405,9 @@ if (req) console.log("options.gun.server 0", req._server);
             req &&
             req._server
         ) {
-            gun.wsp(req._server);
+            if (gun) {
+                gun.wsp(req._server);
+            }
             ensureServer._ensured = true;
             return;
         }
@@ -318,14 +421,18 @@ console.log("options.gun.server 1", options.gun.server);
         if (
             typeof options.gun.server.use === "function"
         ) {
-            gun.wsp(options.gun.server);
+            if (gun) {
+                gun.wsp(options.gun.server);
+            }
             ensureServer._ensured = true;
             return;
         }
         var server = options.gun.server();
 console.log("options.gun.server 2", server);
         if (server) {
-            gun.wsp(server);
+            if (gun) {
+                gun.wsp(server);
+            }
             ensureServer._ensured = true;
         }
     }

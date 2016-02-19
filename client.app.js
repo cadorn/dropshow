@@ -6,7 +6,7 @@ window.$ = $;
 require("./node_modules/magnific-popup/dist/jquery.magnific-popup.min.js");
 window.$ = old$;
 
-require("../gunfield/node_modules/gun/gun.js");
+//require("../gunfield/node_modules/gun/gun.js");
 
 const SPINE = {
     $: $,

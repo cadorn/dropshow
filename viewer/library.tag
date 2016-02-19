@@ -22,9 +22,15 @@
                         <a if={ navbar.previous } class="icon item" onclick={ requestPage } data-id={ navbar.previous }>
                           <i class="left chevron icon" data-id={ navbar.previous }></i>
                         </a>
+                        <a if={ !navbar.previous } class="disabled icon item">
+                          <i class="left chevron icon"></i>
+                        </a>
                         <a each={ navbar.pages } class={ item: true, active: selected } onclick={ requestPage } data-id={ number }>{ number }</a>
                         <a if={ navbar.next } class="icon item" onclick={ requestPage } data-id={ navbar.next }>
                           <i class="right chevron icon" data-id={ navbar.next }></i>
+                        </a>
+                        <a if={ !navbar.next } class="disabled icon item">
+                          <i class="right chevron icon"></i>
                         </a>
                       </div>
                 </td>
@@ -39,7 +45,7 @@
                                     <div if={ pendingAddition } class="ui black ribbon label">
                                         Added
                                     </div>                                
-                                    <gunshow-media url={ urls.thumbnail } id={ id }></gunshow-media>
+                                    <gunshow-media url={ url } id={ id } width="275" height="180"></gunshow-media>
                                 </div>
                             </a>
                         </div>

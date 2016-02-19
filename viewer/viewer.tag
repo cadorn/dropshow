@@ -3,10 +3,11 @@
 
     <div class="ui grid gunshow-viewer">
       <div class="four wide column">
-        <div class="ui vertical fluid tabular menu">
+        <div class="ui vertical fluid tabular menu galleries-menu">
           <a each={ galleries } class={ item: true, active: id == gallery.id } onclick={ requestGallery }>
-            { title } ({ itemCount })
-            <div if={ type == "showcase" } class="ui horizontal label">SC</div>
+            <div>{ title }</div>
+            <div class="ui label">{ itemCount }</div>
+            <div if={ type == "showcase" } class="ui horizontal blue label">SC</div>
           </a>
           <a if={ state.mode == "edit" } class="item" onclick={ requestGalleryNew }>
             <i class="plus icon"></i>
@@ -39,7 +40,7 @@
 
             <div class="card" each={ gallery.images } data-id={ id }>
                 <div class="image">
-                    <gunshow-media url={ urls.thumbnail }></gunshow-media>
+                    <gunshow-media url={ url } width="275" height="180"></gunshow-media>
                 </div>
                 <div if={ parent.state.mode == "edit" }  class="content">
                     <a href="#" onclick={ requestItemRemove }>
@@ -58,9 +59,25 @@
     </script>
     
     <style>
-      .gunshow-viewer .menu .item {
+      .gunshow-viewer .galleries-menu {
+        min-width: 230px;
+      }
+      .gunshow-viewer .galleries-menu a.item {
         padding: 5px !important;
         white-space: nowrap !important;
+        display: block !important;
+      }
+      .gunshow-viewer .galleries-menu a.item.active {
+        border-width: 2px !important;
+        background-color: #D4D4D5 !important;
+      }
+      .gunshow-viewer .galleries-menu a.item > div {
+        display: inline-block !important;
+        margin: 0px !important;
+        white-space: nowrap !important;
+      }
+      .gunshow-viewer .galleries-menu a.item > div.label {
+        margin-top: -3px !important;
       }
     </style>
     

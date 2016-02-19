@@ -32,14 +32,7 @@ exports.forSpine = function (SPINE) {
                         }
                         images.forEach(function (image) {
                             if (!image) return;
-                            if (
-                                insertionContext &&
-                                insertionContext.type === "showcase"
-                            ) {
-                                // Allow to associate more than once.
-                            } else {
-                                associatedImages[image.id] = true;
-                            }
+                            associatedImages[image.id] = true;
                         });
                     });
 
@@ -55,9 +48,6 @@ exports.forSpine = function (SPINE) {
             function setImages (images) {
                 self.images = Object.keys(images).map(function (id) {
                     images[id].id = id;
-                    if (typeof images[id].urls === "string") {
-                        images[id].urls = JSON.parse(images[id].urls);
-                    }
                     return images[id];
                 });
                 self.imagesAll = SPINE.LODASH.sortBy(self.images, ['created_at', 'id']);
@@ -74,7 +64,16 @@ exports.forSpine = function (SPINE) {
                 }
                 self.images = self.imagesAll.filter(function (image) {
                     image.pendingAddition = imagesToAdd[image.id] || false
-                    return (!associatedImages[image.id]);
+
+                    if (
+                        insertionContext &&
+                        insertionContext.type === "showcase"
+                    ) {
+                        // Allow to associate more than once.
+                        return true;
+                    } else {
+                        return (!associatedImages[image.id]);
+                    }
                 });
                 
                 var imagesPerPage = 100;

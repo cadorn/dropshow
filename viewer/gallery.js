@@ -24,6 +24,17 @@ exports.forSpine = function (SPINE) {
                 self.gallery.images = SPINE.LODASH.sortBy(self.gallery.images, ['created_at', 'id']);
             }
             self.gallery.id = id;
+
+            SPINE.data.where("library/images/all", {
+                "id": SPINE.LODASH.map(self.gallery.images, "id")
+            }).then(function (records) {
+
+                self.gallery.images = Object.keys(records).map(function (id) {
+                    return records[id];
+                });
+
+                self.update();
+            }).catch(console.error);
         }
 
         SPINE.events.on("changed.state", function () {
@@ -41,9 +52,37 @@ exports.forSpine = function (SPINE) {
 
             SPINE.data.get(ns, id).then(function (record) {
                 setGallery(id, record);
-                self.update();
             }).catch(console.error);
         });
+        
+        self.requestLightbox = function (event) {
+
+            var images = [];
+            var selectedIndex = -1;
+            var i = 0;
+            $("img", $(event.target).closest('.lightbox-boundary')).each(function () {
+                var url = $(this).attr("src");
+
+                url = url.replace(/w_\d*/, "w_" + 1000);
+                url = url.replace(/h_\d*/, "h_" + Math.round(1000/4*3));
+
+                images.push({
+                    src: url
+                });
+                if ($(this).attr("data-id") === event.item.id) {
+                    selectedIndex = i;
+                }
+                i += 1;
+            });
+
+            SPINE.$.magnificPopup.open({
+                items: images,
+                gallery: {
+                    enabled: true
+                },
+                type: 'image'
+            }, selectedIndex);
+        }
     }
 
 

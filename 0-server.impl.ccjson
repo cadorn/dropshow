@@ -1,3 +1,6 @@
 {
-    "$": "./0-server.ccjson.js"
+    "$": "./0-server.ccjson.js",
+    "build": {
+        "basePath": "{{__DIRNAME__}}"
+    }
 }
